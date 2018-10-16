@@ -12,6 +12,22 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>D:\MAIN\C# projects\POS Integrator\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,9 +48,23 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>7FAA0FB2D040ACD420A7EA24CBF12E6E7B00D101</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>POSIntegratorV2_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.Linq" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -46,14 +76,65 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Form1.cs">
+    <Compile Include="Controller\MstCustomerController.cs" />
+    <Compile Include="Controller\MstItemController.cs" />
+    <Compile Include="Controller\MstSupplierController.cs" />
+    <Compile Include="Controller\TrnCollectionController.cs" />
+    <Compile Include="Controller\TrnItemPriceController.cs" />
+    <Compile Include="Controller\TrnReceivingReceiptController.cs" />
+    <Compile Include="Controller\TrnSalesReturnController.cs" />
+    <Compile Include="Controller\TrnStockInController.cs" />
+    <Compile Include="Controller\TrnStockOutController.cs" />
+    <Compile Include="Controller\TrnStockTransferInController.cs" />
+    <Compile Include="Controller\TrnStockTransferOutController.cs" />
+    <Compile Include="Data\POSDatabase.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>POSDatabase.dbml</DependentUpon>
+    </Compile>
+    <Compile Include="Entities\MstCustomer.cs" />
+    <Compile Include="Entities\MstItem.cs" />
+    <Compile Include="Entities\MstItemPrice.cs" />
+    <Compile Include="Entities\MstSupplier.cs" />
+    <Compile Include="Entities\System.cs" />
+    <Compile Include="Entities\TrnArticlePrice.cs" />
+    <Compile Include="Entities\TrnCollection.cs" />
+    <Compile Include="Entities\TrnCollectionLines.cs" />
+    <Compile Include="Entities\TrnReceivingReceipt.cs" />
+    <Compile Include="Entities\TrnReceivingReceiptItem.cs" />
+    <Compile Include="Entities\TrnStockIn.cs" />
+    <Compile Include="Entities\TrnStockInItem.cs" />
+    <Compile Include="Entities\TrnStockOut.cs" />
+    <Compile Include="Entities\TrnStockOutItem.cs" />
+    <Compile Include="Entities\TrnStockTransfer.cs" />
+    <Compile Include="Entities\TrnStockTransferItem.cs" />
+    <Compile Include="frmAbout.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="frmAbout.Designer.cs">
+      <DependentUpon>frmAbout.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmMain.Designer.cs">
+      <DependentUpon>frmMain.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SysGlobal.cs" />
+    <Compile Include="frmSysSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmSysSettings.Designer.cs">
+      <DependentUpon>frmSysSettings.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="frmAbout.resx">
+      <DependentUpon>frmAbout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmMain.resx">
+      <DependentUpon>frmMain.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -62,7 +143,23 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="frmSysSettings.resx">
+      <DependentUpon>frmSysSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="Data\POSDatabase.dbml">
+      <Generator>MSLinqToSQLGenerator</Generator>
+      <LastGenOutput>POSDatabase.designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Data\POSDatabase.dbml.layout">
+      <DependentUpon>POSDatabase.dbml</DependentUpon>
+    </None>
+    <None Include="POSIntegratorV2_TemporaryKey.pfx" />
+    <None Include="System.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -75,6 +172,25 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.6.1 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{3259AA49-8AA1-44D3-9025-A0B520596A8C}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\innosofticon.ico" />
+    <Content Include="Data\innosofticon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

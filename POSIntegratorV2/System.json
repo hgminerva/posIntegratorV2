@@ -1,0 +1,6 @@
+{
+  "Date": "09/21/2018",
+  "Domain": "www.easyfis.com",
+  "LocalConnection": "Data Source=HARHAR\\SQLEXPRESS;Initial Catalog=pos1;User ID=sa;Password=innosoft;Integrated Security=True",
+  "OutputFileLocation": "D:\\Songs"
+}

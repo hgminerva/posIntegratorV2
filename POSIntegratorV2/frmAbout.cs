@@ -10,11 +10,21 @@ using System.Windows.Forms;
 
 namespace POSIntegratorV2
 {
-    public partial class Form1 : Form
+    public partial class frmAbout : Form
     {
-        public Form1()
+        public frmAbout()
         {
             InitializeComponent();
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
