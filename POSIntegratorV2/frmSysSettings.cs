@@ -98,9 +98,11 @@ namespace POSIntegratorV2
             }
             JavaScriptSerializer js = new JavaScriptSerializer();
             s = js.Deserialize<Entities.System>(json);
-            txtFileLocation.Text = s.OutputFileLocation;
+            txtFileLocation.Text = s.LogFileLocation;
             txtLocalConnection.Text = s.LocalConnection;
             txtDomain.Text = s.Domain;
+            txtFolderToMonitor.Text = s.FoldertoMonitor;
+            //txtDefaultDate.Checked = s.IsDefaultDate;
         }
 
         public void SaveOutputFileLocation()
@@ -110,7 +112,8 @@ namespace POSIntegratorV2
             {
                 Domain = txtDomain.Text,
                 LocalConnection = txtLocalConnection.Text,
-                OutputFileLocation = txtFileLocation.Text
+                LogFileLocation = txtFileLocation.Text,
+                FoldertoMonitor=txtFolderToMonitor.Text
             };
 
             String json = new JavaScriptSerializer().Serialize(settingsData);
@@ -131,6 +134,8 @@ namespace POSIntegratorV2
                 txtUserCode.Enabled = false;
                 txtDomain.Enabled = false;
                 txtLocalConnection.Enabled = false;
+                txtFolderToMonitor.Enabled = false;
+                //txtDefaultDate.Enabled = false;
             }
             else
             {
@@ -141,7 +146,9 @@ namespace POSIntegratorV2
                 txtUseItemPrice.Enabled = true;
                 txtUserCode.Enabled = true;
                 txtDomain.Enabled = true;
+                //txtDefaultDate.Enabled = true;
                 txtLocalConnection.Enabled = true;
+                txtFolderToMonitor.Enabled = true;
             }
         }
 

@@ -10,7 +10,9 @@ namespace POSIntegratorV2.Entities
     {
         public String Date { get; set; }
         public String Domain { get; set; }
+        //public Boolean IsDefaultDate { get; set; }
         public String LocalConnection { get; set; }
-        public string OutputFileLocation { get; set; }
+        public String LogFileLocation { get; set; }
+        public String FoldertoMonitor { get; set; }
     }
 }

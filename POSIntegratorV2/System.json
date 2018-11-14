@@ -1,6 +1,8 @@
 {
   "Date": "09/21/2018",
+  "IsDefaultDate": true,
   "Domain": "www.easyfis.com",
-  "LocalConnection": "Data Source=HARHAR\\SQLEXPRESS;Initial Catalog=pos1;User ID=sa;Password=innosoft;Integrated Security=True",
-  "OutputFileLocation": "D:\\Songs"
+  "LocalConnection": "Data Source=HARHAR\\SQLEXPRESS;Initial Catalog=pos17_W;User ID=sa;Password=innosoft;Integrated Security=True",
+  "LogFileLocation": "D:\\Songs",
+  "FolderToMonitor": "D:\\Easyfis"
 }

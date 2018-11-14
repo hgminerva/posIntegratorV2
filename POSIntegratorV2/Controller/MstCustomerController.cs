@@ -12,10 +12,18 @@ namespace POSIntegratorV2.Controllers
     {
         public frmMain formMain;
         public String ActivityDate;
-        public MstCustomerController(frmMain form,String ActDate)
+        public MstCustomerController(frmMain form,String ActDate, Boolean useSystemDate)
         {
             formMain = form;
-            ActivityDate = ActDate;
+            if(useSystemDate==true)
+            {
+                DateTime dateTimeToday = DateTime.Now;
+                ActivityDate = dateTimeToday.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                ActivityDate = ActDate;
+            }
         }
         // ============
         // Get Customer
