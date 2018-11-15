@@ -111,6 +111,8 @@
     <Compile Include="Entities\TrnStockOutItem.cs" />
     <Compile Include="Entities\TrnStockTransfer.cs" />
     <Compile Include="Entities\TrnStockTransferItem.cs" />
+    <Compile Include="FileWatcherController\TrnReceivingReceiptFileWatcherController.cs" />
+    <Compile Include="FileWatcherController\TrnSalesInvoiceFileWatcherController.cs" />
     <Compile Include="frmAbout.cs">
       <SubType>Form</SubType>
     </Compile>

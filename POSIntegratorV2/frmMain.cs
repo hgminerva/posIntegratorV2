@@ -7,15 +7,12 @@
  * Hope u guys like it.
  * - Max Persson
  */
-
 using System;
 using System.Collections.Generic;
 using System.Data;
-// Using System.IO to get the hooks from the system
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
@@ -36,8 +33,9 @@ namespace POSIntegratorV2
         public FileSystemWatcher _watchFolder = new FileSystemWatcher();
         public Boolean FileWatcherIsStarted;
         public string folderToWatch;
-        public string  fileNameTxt;
+        public string fileNameTxt;
         delegate void SetTextCallback(string text);
+        public static String LogFileOutputFM;
 
         //===========================================================================
         //                  POS Local Monitoring 
@@ -87,8 +85,6 @@ namespace POSIntegratorV2
                 btnStop.Enabled = false;
             }
         }
-
-        // folder monitoring
 
         // configure and integrate
 
@@ -473,6 +469,7 @@ namespace POSIntegratorV2
             }
             else
             {
+                this.txtActivityLogFM.Text += LogFileOutputFM + "\r\n\n  ";
                 this.txtActivityLogFM.Text += txt + "\r\n\n ";
             }
         }
@@ -528,9 +525,11 @@ namespace POSIntegratorV2
         private void fileCreated(object sender, FileSystemEventArgs e)
         {
             string oldPath = null;
+            //string filePath;
             if (oldPath != e.FullPath)
             {
                 fileNameTxt = e.FullPath.Substring(0, e.FullPath.Length - 4);
+                //filePath =
                 processFile(e.FullPath);
             }
             oldPath = e.FullPath;
@@ -636,6 +635,12 @@ namespace POSIntegratorV2
                 JavaScriptSerializer serializer = new JavaScriptSerializer();
                 string json = serializer.Serialize(newSalesInvoice);
                 File.WriteAllText(txtFile, json);
+
+                String apiUrlHost = txtDomain.Text;
+
+                FileWatcherController.TrnSalesInvoiceFileWatcherController objTrnSalesInvoiceFM = new FileWatcherController.TrnSalesInvoiceFileWatcherController(this, txtDate);
+
+                objTrnSalesInvoiceFM.SendCollection(apiUrlHost, json);
             }
             catch (Exception e)
             {
