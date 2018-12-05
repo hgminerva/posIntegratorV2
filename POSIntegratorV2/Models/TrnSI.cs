@@ -2,7 +2,7 @@
 
 namespace POSIntegratorV2.Models
 {
-    public class TrnSalesInvoice
+    public class TrnSI
     {
         public String BranchCode { get; set; }
         public String BranchName { get; set; }

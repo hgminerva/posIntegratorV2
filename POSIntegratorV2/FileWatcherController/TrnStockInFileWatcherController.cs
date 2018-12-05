@@ -8,7 +8,7 @@ using System.Web.Script.Serialization;
 
 namespace POSIntegratorV2.FileWatcherController
 {
-    class TrnReceivingReceiptFileWatcherController
+    class TrnStockInFileWatcherController
     {
         //public frmMain formMain;
 

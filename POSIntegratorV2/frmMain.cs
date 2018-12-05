@@ -538,13 +538,15 @@ namespace POSIntegratorV2
         //process the file created and print file name location
         private void processFile(string fullPath)
         {
+            string DirName = fullPath.Substring(0,fullPath.LastIndexOf('\\'));
             bool IsWatching = true;
             while (IsWatching == true)
             {
                 try
                 {
                     logMessageFM(fullPath.ToString());
-                    BindDataCSV(fullPath.ToString());
+                    BindDataCVCSV(fullPath.ToString());
+                    BindDataSICSV(fullPath.ToString());
                 }
                 catch (IOException)
                 {
@@ -554,8 +556,13 @@ namespace POSIntegratorV2
             }
         }
 
+        private void BindDataCVCSV(string v)
+        {
+
+        }
+
         // convert csv proccessed file into json object
-        private void BindDataCSV(string text)
+        private void BindDataSICSV(string text)
         {
             try
             {
@@ -573,7 +580,7 @@ namespace POSIntegratorV2
                         dt.Columns.Add(new DataColumn(headerWord));
                     }
 
-                    List<Models.TrnSalesInvoice> newSalesInvoice = new List<Models.TrnSalesInvoice>();
+                    List<Models.TrnSI> newSalesInvoice = new List<Models.TrnSI>();
 
                     // lines
                     for (int r = 1; r < lines.Length; r++)
@@ -591,7 +598,7 @@ namespace POSIntegratorV2
 
                         dt.Rows.Add(dr);
 
-                        newSalesInvoice.Add(new Models.TrnSalesInvoice
+                        newSalesInvoice.Add(new Models.TrnSI
                         {
                             BranchCode = dr.ItemArray[0].ToString(),
                             BranchName = dr.ItemArray[1].ToString(),
@@ -611,10 +618,8 @@ namespace POSIntegratorV2
                             Price = Convert.ToDecimal(dr.ItemArray[15]),
                             Discount = Convert.ToDecimal(dr.ItemArray[16]),
                             DiscountRate = Convert.ToDecimal(dr.ItemArray[17]),
-                            NetPrice = Convert.ToDecimal(dr.ItemArray[18]),
-                            Amount = Convert.ToDecimal(dr.ItemArray[19]),
-                            VAT = Convert.ToDecimal(dr.ItemArray[20]),
-                            VATAmount = Convert.ToDecimal(dr.ItemArray[21])
+                            NetPrice = Convert.ToDecimal(dr.ItemArray[19]),
+                            Amount = Convert.ToDecimal(dr.ItemArray[20])
                         });
                     }
 
@@ -627,7 +632,7 @@ namespace POSIntegratorV2
             }
         }
         // save json file to folder
-        public void WriteJason(List<Models.TrnSalesInvoice> newSalesInvoice)
+        public void WriteJason(List<Models.TrnSI> newSalesInvoice)
         {
             try
             {

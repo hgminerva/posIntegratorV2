@@ -8,18 +8,18 @@ using System.Web.Script.Serialization;
 
 namespace POSIntegratorV2.FileWatcherController
 {
-    class TrnReceivingReceiptFileWatcherController
+    class TrnCheckVoucherFileWatcherController
     {
-        //public frmMain formMain;
+        public frmMain formMain;
 
         //public TrnSalesInvoiceFileWatcherController(frmMain form, System.Windows.Forms.DateTimePicker txtDate)
         //{
-        //    formMain = form;
+        //    //formMain = form;
         //}
 
-        //// ===============
-        //// Send Collection
-        //// ===============
+        // ===============
+        // Send Collection
+        // ===============
         //public void SendCollection( String apiUrlHost, String json)
         //{
         //    try
