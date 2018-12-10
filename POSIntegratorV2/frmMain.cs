@@ -7,9 +7,11 @@
  * Hope u guys like it.
  * - Max Persson
  */
+using POSIntegratorV2.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -446,6 +448,7 @@ namespace POSIntegratorV2
             btnStartFM.Enabled = false;
             btnStopFM.Enabled = true;
             tabDM.Enabled = false;
+
             systemFileWatcher();
         }
 
@@ -455,6 +458,7 @@ namespace POSIntegratorV2
             btnStartFM.Enabled = true;
             btnStopFM.Enabled = false;
             tabDM.Enabled = true;
+
             systemFileWatcher();
         }
 
@@ -494,7 +498,9 @@ namespace POSIntegratorV2
                 _watchFolder.IncludeSubdirectories = true;
                 _watchFolder.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite
                                             | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+
                 _watchFolder.Path = s.FoldertoMonitor;
+
                 _watchFolder.Created += new FileSystemEventHandler(fileCreated);
                 _watchFolder.Deleted += new FileSystemEventHandler(fileDeleted);
                 _watchFolder.EnableRaisingEvents = true;
@@ -525,11 +531,9 @@ namespace POSIntegratorV2
         private void fileCreated(object sender, FileSystemEventArgs e)
         {
             string oldPath = null;
-            //string filePath;
             if (oldPath != e.FullPath)
             {
                 fileNameTxt = e.FullPath.Substring(0, e.FullPath.Length - 4);
-                //filePath =
                 processFile(e.FullPath);
             }
             oldPath = e.FullPath;
@@ -538,15 +542,23 @@ namespace POSIntegratorV2
         //process the file created and print file name location
         private void processFile(string fullPath)
         {
-            string DirName = fullPath.Substring(0,fullPath.LastIndexOf('\\'));
+            string DirName = fullPath;
             bool IsWatching = true;
             while (IsWatching == true)
             {
                 try
                 {
+                    string[] value = DirName.Split('\\');
+                    Debug.WriteLine(value[2]);
                     logMessageFM(fullPath.ToString());
-                    BindDataCVCSV(fullPath.ToString());
-                    BindDataSICSV(fullPath.ToString());
+                    if (value[2].Equals("CV")) { BindDataCVCSV(fullPath.ToString()); }
+                    if (value[2].Equals("IN")) { BindDataINCSV(fullPath.ToString()); }
+                    if (value[2].Equals("JV")) { BindDataJVCSV(fullPath.ToString()); }
+                    if (value[2].Equals("OR")) { BindDataORCSV(fullPath.ToString()); }
+                    if (value[2].Equals("OT")) { BindDataOTCSV(fullPath.ToString()); }
+                    if (value[2].Equals("RR")) { BindDataRRCSV(fullPath.ToString()); }
+                    if (value[2].Equals("SI")) { BindDataSICSV(fullPath.ToString()); }
+                    if (value[2].Equals("ST")) { BindDataSTCSV(fullPath.ToString()); }
                 }
                 catch (IOException)
                 {
@@ -556,12 +568,643 @@ namespace POSIntegratorV2
             }
         }
 
-        private void BindDataCVCSV(string v)
+        // ===================================
+        //  convert csv proccessed file into json object S
+        //  ST
+        //====================================
+        private void BindDataSTCSV(string text)
         {
+            try
+            {
+                dt = new DataTable();
+                string[] lines = File.ReadAllLines(text);
 
+                if (lines.Length > 0)
+                {
+                    string firstLine = lines[0];
+                    string[] headerLabels = firstLine.Split(',');
+
+                    // header
+                    foreach (string headerWord in headerLabels)
+                    {
+                        dt.Columns.Add(new DataColumn(headerWord));
+                    }
+
+                    List<Models.TrnST> newStockTransfer = new List<Models.TrnST>();
+
+                    // lines
+                    for (int r = 1; r < lines.Length; r++)
+                    {
+                        string line = lines[r];
+                        dataWords = line.Split(',');
+
+                        DataRow dr = dt.NewRow();
+                        columnIndex = 0;
+
+                        foreach (string headerWord in headerLabels)
+                        {
+                            dr[headerWord] = dataWords[columnIndex++];
+                        }
+
+                        dt.Rows.Add(dr);
+
+                        newStockTransfer.Add(new Models.TrnST
+                        {
+                            BranchCode = dr.ItemArray[0].ToString(),
+                            STDate = dr.ItemArray[1].ToString(),
+                            ToBranchCode = dr.ItemArray[2].ToString(),
+                            ArticleCode = dr.ItemArray[3].ToString(),
+                            Remarks = dr.ItemArray[4].ToString(),
+                            ManualSTNumber = dr.ItemArray[5].ToString(),
+                            UserCode = dr.ItemArray[6].ToString(),
+                            CreatedDateTime = dr.ItemArray[7].ToString(),
+                            ItemCode = dr.ItemArray[8].ToString(),
+                            Particulars = dr.ItemArray[9].ToString(),
+                            Unit = dr.ItemArray[10].ToString(),
+                            Quantity = dr.ItemArray[11].ToString(),
+                            Cost = dr.ItemArray[12].ToString(),
+                            Amount = dr.ItemArray[13].ToString(),
+                        });
+                    }
+
+                    WriteSTJason(newStockTransfer);
+                }
+            }
+            catch (Exception e)
+            {
+                logMessageFM(e.Message + "\r\n\n" + "Please check File Name");
+            }
+        }
+        private void WriteSTJason(List<TrnST> newStockTransfer)
+        {
+            try
+            {
+                string txtFile = fileNameTxt + ".json";
+                JavaScriptSerializer serializer = new JavaScriptSerializer();
+                string json = serializer.Serialize(newStockTransfer);
+                File.WriteAllText(txtFile, json);
+
+                String apiUrlHost = txtDomain.Text;
+
+                FileWatcherController.TrnStockTransferFileWatcherController objTrnStockTransferFM = new FileWatcherController.TrnStockTransferFileWatcherController(this, txtDate);
+
+                objTrnStockTransferFM.SendStockTransfer(apiUrlHost, json);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
         }
 
-        // convert csv proccessed file into json object
+        // ==================================
+        //  convert csv proccessed file into json object 
+        //  RR
+        //===================================
+        private void BindDataRRCSV(string text)
+        {
+            try
+            {
+                dt = new DataTable();
+                string[] lines = File.ReadAllLines(text);
+
+                if (lines.Length > 0)
+                {
+                    string firstLine = lines[0];
+                    string[] headerLabels = firstLine.Split(',');
+
+                    // header
+                    foreach (string headerWord in headerLabels)
+                    {
+                        dt.Columns.Add(new DataColumn(headerWord));
+                    }
+
+                    List<Models.TrnRR> newReceivingReceipt = new List<Models.TrnRR>();
+
+                    // lines
+                    for (int r = 1; r < lines.Length; r++)
+                    {
+                        string line = lines[r];
+                        dataWords = line.Split(',');
+
+                        DataRow dr = dt.NewRow();
+                        columnIndex = 0;
+
+                        foreach (string headerWord in headerLabels)
+                        {
+                            dr[headerWord] = dataWords[columnIndex++];
+                        }
+
+                        dt.Rows.Add(dr);
+
+                        newReceivingReceipt.Add(new Models.TrnRR
+                        {
+                            BranchCode = dr.ItemArray[0].ToString(),
+                            RRDate = dr.ItemArray[1].ToString(),
+                            SupplierCode = dr.ItemArray[2].ToString(),
+                            Term = dr.ItemArray[3].ToString(),
+                            ManualRRNumber = dr.ItemArray[4].ToString(),
+                            DocumentReference = "NA",
+                            Remarks = dr.ItemArray[5].ToString(),
+                            UserCode ="NA",
+                            CreatedDateTime = dr.ItemArray[6].ToString(),
+                            PONumber = dr.ItemArray[7].ToString(),
+                            PODate = dr.ItemArray[8].ToString(),
+                            PODateNeeded = dr.ItemArray[9].ToString(),
+                            ItemCode = dr.ItemArray[10].ToString(),
+                            Particulars = dr.ItemArray[11].ToString(),
+                            Unit = dr.ItemArray[12].ToString(),
+                            Quantity = dr.ItemArray[13].ToString(),
+                            Cost = dr.ItemArray[14].ToString(),
+                            Amount = dr.ItemArray[15].ToString(),
+                            ReceivedBranchCode = dr.ItemArray[16].ToString()
+                        });
+                    }
+
+                    WriteRRJason(newReceivingReceipt);
+                }
+            }
+            catch (Exception e)
+            {
+                logMessageFM(e.Message + "\r\n\n" + "Please check File Name");
+            }
+        }
+        private void WriteRRJason(List<TrnRR> newReceivingReceipt)
+        {
+            try
+            {
+                string txtFile = fileNameTxt + ".json";
+                JavaScriptSerializer serializer = new JavaScriptSerializer();
+                string json = serializer.Serialize(newReceivingReceipt);
+                File.WriteAllText(txtFile, json);
+
+                String apiUrlHost = txtDomain.Text;
+
+                FileWatcherController.TrnReceivingReceiptFileWatcherController objTrnReceivingReceiptFM = new FileWatcherController.TrnReceivingReceiptFileWatcherController(this, txtDate);
+
+                objTrnReceivingReceiptFM.SendReceivingReceipt(apiUrlHost, json);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        //====================================
+        //  convert csv proccessed file into json object 
+        //  OT
+        //====================================
+        private void BindDataOTCSV(string text)
+        {
+            try
+            {
+                dt = new DataTable();
+                string[] lines = File.ReadAllLines(text);
+
+                if (lines.Length > 0)
+                {
+                    string firstLine = lines[0];
+                    string[] headerLabels = firstLine.Split(',');
+
+                    // header
+                    foreach (string headerWord in headerLabels)
+                    {
+                        dt.Columns.Add(new DataColumn(headerWord));
+                    }
+
+                    List<Models.TrnOT> newStockOut = new List<Models.TrnOT>();
+
+                    // lines
+                    for (int r = 1; r < lines.Length; r++)
+                    {
+                        string line = lines[r];
+                        dataWords = line.Split(',');
+
+                        DataRow dr = dt.NewRow();
+                        columnIndex = 0;
+
+                        foreach (string headerWord in headerLabels)
+                        {
+                            dr[headerWord] = dataWords[columnIndex++];
+                        }
+
+                        dt.Rows.Add(dr);
+
+                        newStockOut.Add(new Models.TrnOT
+                        {
+                            BranchCode = dr.ItemArray[0].ToString(),
+                            ManualOTNumber = dr.ItemArray[1].ToString(),
+                            OTDate = dr.ItemArray[2].ToString(),
+                            AccountCode = dr.ItemArray[3].ToString(),
+                            ArticleCode = dr.ItemArray[4].ToString(),
+                            Remarks = dr.ItemArray[5].ToString(),
+                            UserCode ="NA",
+                            CreatedDateTime = dr.ItemArray[6].ToString(),
+                            ItemCode = dr.ItemArray[7].ToString(),
+                            Particulars = dr.ItemArray[8].ToString(),
+                            Unit = dr.ItemArray[9].ToString(),
+                            Quantity = dr.ItemArray[10].ToString(),
+                            Cost = dr.ItemArray[11].ToString(),
+                            Amount = dr.ItemArray[12].ToString(),
+                        });
+                    }
+
+                    WriteOTJason(newStockOut);
+                }
+            }
+            catch (Exception e)
+            {
+                logMessageFM(e.Message + "\r\n\n" + "Please check File Name");
+            }
+        }
+        private void WriteOTJason(List<TrnOT> newStockOut)
+        {
+            try
+            {
+                string txtFile = fileNameTxt + ".json";
+                JavaScriptSerializer serializer = new JavaScriptSerializer();
+                string json = serializer.Serialize(newStockOut);
+                File.WriteAllText(txtFile, json);
+
+                String apiUrlHost = txtDomain.Text;
+
+                FileWatcherController.TrnStockOutFileWatcherController objTrnStockOutFM = new FileWatcherController.TrnStockOutFileWatcherController(this, txtDate);
+
+                objTrnStockOutFM.sendStockOut(apiUrlHost, json);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        //===================================
+        // convert csv proccessed file into json object S
+        // OR
+        //====================================
+        private void BindDataORCSV(string text)
+        {
+            try
+            {
+                dt = new DataTable();
+                string[] lines = File.ReadAllLines(text);
+
+                if (lines.Length > 0)
+                {
+                    string firstLine = lines[0];
+                    string[] headerLabels = firstLine.Split(',');
+
+                    // header
+                    foreach (string headerWord in headerLabels)
+                    {
+                        dt.Columns.Add(new DataColumn(headerWord));
+                    }
+
+                    List<Models.TrnOR> newCollection = new List<Models.TrnOR>();
+
+                    // lines
+                    for (int r = 1; r < lines.Length; r++)
+                    {
+                        string line = lines[r];
+                        dataWords = line.Split(',');
+
+                        DataRow dr = dt.NewRow();
+                        columnIndex = 0;
+
+                        foreach (string headerWord in headerLabels)
+                        {
+                            dr[headerWord] = dataWords[columnIndex++];
+                        }
+
+                        dt.Rows.Add(dr);
+
+                        newCollection.Add(new Models.TrnOR
+                        {
+                            BranchCode = dr.ItemArray[0].ToString(),
+                            ORDate = dr.ItemArray[1].ToString(),
+                            CustomerCode = dr.ItemArray[2].ToString(),
+                            Remarks = dr.ItemArray[3].ToString(),
+                            ManualORNumber = dr.ItemArray[5].ToString(),
+                            UserCode = "NA",
+                            CreatedDateTime = dr.ItemArray[6].ToString(),
+                            AccountCode = dr.ItemArray[6].ToString(),
+                            ArticleCode = dr.ItemArray[7].ToString(),
+                            SINumber = dr.ItemArray[8].ToString(),
+                            Particulars = dr.ItemArray[9].ToString(),
+                            Amount = dr.ItemArray[10].ToString(),
+                            PayType = dr.ItemArray[11].ToString(),
+                            CheckNumber = dr.ItemArray[12].ToString(),
+                            CheckDate = dr.ItemArray[13].ToString(),
+                            CheckBank = dr.ItemArray[14].ToString(),
+                            DepositoryBankCode = dr.ItemArray[15].ToString(),
+                            IsClear = dr.ItemArray[16].ToString()
+                        });
+                    }
+
+                    WriteORJason(newCollection);
+                }
+            }
+            catch (Exception e)
+            {
+                logMessageFM(e.Message + "\r\n\n" + "Please check File Name");
+            }
+        }
+        private void WriteORJason(List<TrnOR> newCollection)
+        {
+            try
+            {
+                string txtFile = fileNameTxt + ".json";
+                JavaScriptSerializer serializer = new JavaScriptSerializer();
+                string json = serializer.Serialize(newCollection);
+                File.WriteAllText(txtFile, json);
+
+                String apiUrlHost = txtDomain.Text;
+
+                FileWatcherController.TrnCollectionFileWatcherController objTrnCollectionFM = new FileWatcherController.TrnCollectionFileWatcherController(this, txtDate);
+
+                objTrnCollectionFM.SendCollection(apiUrlHost, json);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        //======================================
+        // convert csv proccessed file into json object S
+        // JV
+        //=======================================
+        private void BindDataJVCSV(string text)
+        {
+            try
+            {
+                dt = new DataTable();
+                string[] lines = File.ReadAllLines(text);
+
+                if (lines.Length > 0)
+                {
+                    string firstLine = lines[0];
+                    string[] headerLabels = firstLine.Split(',');
+
+                    // header
+                    foreach (string headerWord in headerLabels)
+                    {
+                        dt.Columns.Add(new DataColumn(headerWord));
+                    }
+
+                    List<Models.TrnJV> newJournalVoucher = new List<Models.TrnJV>();
+
+                    // lines
+                    for (int r = 1; r < lines.Length; r++)
+                    {
+                        string line = lines[r];
+                        dataWords = line.Split(',');
+
+                        DataRow dr = dt.NewRow();
+                        columnIndex = 0;
+
+                        foreach (string headerWord in headerLabels)
+                        {
+                            dr[headerWord] = dataWords[columnIndex++];
+                        }
+
+                        dt.Rows.Add(dr);
+
+                        newJournalVoucher.Add(new Models.TrnJV
+                        {
+                            BranchCode = dr.ItemArray[0].ToString(),
+                            ManualJVNumber = dr.ItemArray[1].ToString(),
+                            JVDate = dr.ItemArray[2].ToString(),
+                            Remarks = dr.ItemArray[3].ToString(),
+                            UserCode = "NA",
+                            CreatedDateTime = dr.ItemArray[4].ToString(),
+                            EntryBranchCode = dr.ItemArray[5].ToString(),
+                            AccountCode = dr.ItemArray[6].ToString(),
+                            ArticleCode = dr.ItemArray[7].ToString(),
+                            Particulars = dr.ItemArray[8].ToString(),
+                            DebitAmount = dr.ItemArray[9].ToString(),
+                            CreditAmount = dr.ItemArray[10].ToString(),
+                            ARRRNumber = dr.ItemArray[11].ToString(),
+                            ARSINumber = dr.ItemArray[12].ToString(),
+                            IsClear = dr.ItemArray[13].ToString(),
+                        });
+                    }
+
+                    WriteJVJason(newJournalVoucher);
+                }
+            }
+            catch (Exception e)
+            {
+                logMessageFM(e.Message + "\r\n\n" + "Please check File Name");
+            }
+        }
+        private void WriteJVJason(List<TrnJV> newJournalVoucher)
+        {
+            try
+            {
+                string txtFile = fileNameTxt + ".json";
+                JavaScriptSerializer serializer = new JavaScriptSerializer();
+                string json = serializer.Serialize(newJournalVoucher);
+                File.WriteAllText(txtFile, json);
+
+                String apiUrlHost = txtDomain.Text;
+
+                FileWatcherController.TrnJournalVoucherFileWatcherController objTrnJournalVoucherFM = new FileWatcherController.TrnJournalVoucherFileWatcherController(this, txtDate);
+
+                objTrnJournalVoucherFM.sendJournalVoucher(apiUrlHost, json);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        //==============================================
+        // convert csv proccessed file into json object S
+        //  IN
+        //==============================================
+        private void BindDataINCSV(string text)
+        {
+            try
+            {
+                dt = new DataTable();
+                string[] lines = File.ReadAllLines(text);
+
+                if (lines.Length > 0)
+                {
+                    string firstLine = lines[0];
+                    string[] headerLabels = firstLine.Split(',');
+
+                    // header
+                    foreach (string headerWord in headerLabels)
+                    {
+                        dt.Columns.Add(new DataColumn(headerWord));
+                    }
+
+                    List<Models.TrnIN> newStockIn = new List<Models.TrnIN>();
+
+                    // lines
+                    for (int r = 1; r < lines.Length; r++)
+                    {
+                        string line = lines[r];
+                        dataWords = line.Split(',');
+
+                        DataRow dr = dt.NewRow();
+                        columnIndex = 0;
+
+                        foreach (string headerWord in headerLabels)
+                        {
+                            dr[headerWord] = dataWords[columnIndex++];
+                        }
+
+                        dt.Rows.Add(dr);
+
+                        newStockIn.Add(new Models.TrnIN
+                        {
+                            BranchCode = dr.ItemArray[0].ToString(),
+                            ManualINNumber = dr.ItemArray[1].ToString(),
+                            INDate = dr.ItemArray[2].ToString(),
+                            AccountCode = dr.ItemArray[3].ToString(),
+                            ArticleCode = dr.ItemArray[4].ToString(),
+                            Remarks = dr.ItemArray[5].ToString(),
+                            IsProduce = "NA",
+                            UserCode = "NA",
+                            CreatedDateTime = dr.ItemArray[6].ToString(),
+                            ItemCode = dr.ItemArray[7].ToString(),
+                            Particulars = dr.ItemArray[8].ToString(),
+                            Unit = dr.ItemArray[9].ToString(),
+                            Quantity = dr.ItemArray[10].ToString(),
+                            Cost = dr.ItemArray[11].ToString(),
+                            Amount = dr.ItemArray[12].ToString()
+                        });
+                    }
+
+                    WriteINJason(newStockIn);
+                }
+            }
+            catch (Exception e)
+            {
+                logMessageFM(e.Message + "\r\n\n" + "Please check File Name");
+            }
+        }
+        private void WriteINJason(List<TrnIN> newStockIn)
+        {
+            try
+            {
+                string txtFile = fileNameTxt + ".json";
+                JavaScriptSerializer serializer = new JavaScriptSerializer();
+                string json = serializer.Serialize(newStockIn);
+                File.WriteAllText(txtFile, json);
+
+                String apiUrlHost = txtDomain.Text;
+
+                FileWatcherController.TrnStockInFileWatcherController objTrnStockInFM = new FileWatcherController.TrnStockInFileWatcherController(this, txtDate);
+
+                objTrnStockInFM.SendCollection(apiUrlHost, json);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        //=====================================
+        // convert csv proccessed file into json object S
+        //  CV
+        //======================================
+        private void BindDataCVCSV(string text)
+        {
+            try
+            {
+                dt = new DataTable();
+                string[] lines = File.ReadAllLines(text);
+
+                if (lines.Length > 0)
+                {
+                    string firstLine = lines[0];
+                    string[] headerLabels = firstLine.Split(',');
+
+                    // header
+                    foreach (string headerWord in headerLabels)
+                    {
+                        dt.Columns.Add(new DataColumn(headerWord));
+                    }
+
+                    List<Models.TrnCV> newCheckVoucher = new List<Models.TrnCV>();
+
+                    // lines
+                    for (int r = 1; r < lines.Length; r++)
+                    {
+                        string line = lines[r];
+                        dataWords = line.Split(',');
+
+                        DataRow dr = dt.NewRow();
+                        columnIndex = 0;
+
+                        foreach (string headerWord in headerLabels)
+                        {
+                            dr[headerWord] = dataWords[columnIndex++];
+                        }
+
+                        dt.Rows.Add(dr);
+
+                        newCheckVoucher.Add(new Models.TrnCV
+                        {
+                            BranchCode = dr.ItemArray[0].ToString(),
+                            ManualCVNumber = dr.ItemArray[1].ToString(),
+                            CVDate = dr.ItemArray[2].ToString(),
+                            SupplierCode = dr.ItemArray[3].ToString(),
+                            Payee = dr.ItemArray[4].ToString(),
+                            PayType = dr.ItemArray[5].ToString(),
+                            Remarks = dr.ItemArray[6].ToString(),
+                            BankCode = dr.ItemArray[7].ToString(),
+                            CheckNumber = dr.ItemArray[8].ToString(),
+                            CheckDate = dr.ItemArray[9].ToString(),
+                            TotalAmount = dr.ItemArray[10].ToString(),
+                            IsCrossCheck = dr.ItemArray[11].ToString(),
+                            IsClear = dr.ItemArray[12].ToString(),
+                            CreatedDateTime = dr.ItemArray[13].ToString(),
+                            UserCode = dr.ItemArray[13].ToString(),
+                            AccountCode = dr.ItemArray[14].ToString(),
+                            ArticleCode = dr.ItemArray[15].ToString(),
+                            Particulars = dr.ItemArray[16].ToString(),
+                            RRNumber = dr.ItemArray[17].ToString(),
+                            Amount = dr.ItemArray[18].ToString()
+                        });
+                    }
+
+                    WriteCVJason(newCheckVoucher);
+                }
+            }
+            catch (Exception e)
+            {
+                logMessageFM(e.Message + "\r\n\n" + "Please check File Name");
+            }
+        }
+        private void WriteCVJason(List<TrnCV> newCheckVoucher)
+        {
+            try
+            {
+                string txtFile = fileNameTxt + ".json";
+                JavaScriptSerializer serializer = new JavaScriptSerializer();
+                string json = serializer.Serialize(newCheckVoucher);
+                File.WriteAllText(txtFile, json);
+
+                String apiUrlHost = txtDomain.Text;
+
+                FileWatcherController.TrnCheckVoucherFileWatcherController objTrnCheckVoucherFM = new FileWatcherController.TrnCheckVoucherFileWatcherController(this, txtDate);
+
+                objTrnCheckVoucherFM.sendCheckVoucher(apiUrlHost, json);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        //==========================================
+        // convert csv proccessed file into json object S
+        //  SI
+        //===========================================
         private void BindDataSICSV(string text)
         {
             try
@@ -613,17 +1256,17 @@ namespace POSIntegratorV2
                             CreatedDateTime = dr.ItemArray[10].ToString(),
                             ItemCode = dr.ItemArray[11].ToString(),
                             Particulars = dr.ItemArray[12].ToString(),
-                            Quantity = Convert.ToDecimal(dr.ItemArray[13]),
+                            Quantity = dr.ItemArray[13].ToString(),
                             Unit = dr.ItemArray[14].ToString(),
-                            Price = Convert.ToDecimal(dr.ItemArray[15]),
-                            Discount = Convert.ToDecimal(dr.ItemArray[16]),
-                            DiscountRate = Convert.ToDecimal(dr.ItemArray[17]),
-                            NetPrice = Convert.ToDecimal(dr.ItemArray[19]),
-                            Amount = Convert.ToDecimal(dr.ItemArray[20])
+                            Price = dr.ItemArray[15].ToString(),
+                            Discount = dr.ItemArray[16].ToString(),
+                            DiscountRate = dr.ItemArray[17].ToString(),
+                            NetPrice = dr.ItemArray[18].ToString(),
+                            Amount = dr.ItemArray[19].ToString()
                         });
                     }
 
-                    WriteJason(newSalesInvoice);
+                    WriteSIJason(newSalesInvoice);
                 }
             }
             catch (Exception e)
@@ -632,7 +1275,7 @@ namespace POSIntegratorV2
             }
         }
         // save json file to folder
-        public void WriteJason(List<Models.TrnSI> newSalesInvoice)
+        public void WriteSIJason(List<Models.TrnSI> newSalesInvoice)
         {
             try
             {
@@ -645,7 +1288,7 @@ namespace POSIntegratorV2
 
                 FileWatcherController.TrnSalesInvoiceFileWatcherController objTrnSalesInvoiceFM = new FileWatcherController.TrnSalesInvoiceFileWatcherController(this, txtDate);
 
-                objTrnSalesInvoiceFM.SendCollection(apiUrlHost, json);
+                objTrnSalesInvoiceFM.SendInvoice(apiUrlHost, json);
             }
             catch (Exception e)
             {

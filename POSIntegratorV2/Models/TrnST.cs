@@ -17,10 +17,10 @@ namespace POSIntegratorV2.Models
         public String UserCode { get; set; }
         public String CreatedDateTime { get; set; }
         public String ItemCode { get; set; }
-        public String Particluars { get; set; }
+        public String Particulars { get; set; }
         public String Unit { get; set; }
-        public Decimal Quantity { get; set; }
-        public Decimal Cost { get; set; }
-        public Decimal Amount { get; set; }
+        public String Quantity { get; set; }
+        public String Cost { get; set; }
+        public String Amount { get; set; }
     }
 }

@@ -19,12 +19,12 @@ namespace POSIntegratorV2.Models
         public String ArticleCode { get; set; }
         public String SINumber { get; set; }
         public String Particulars { get; set; }
-        public Decimal Amount { get; set; }
+        public String Amount { get; set; }
         public String PayType { get; set; }
         public String CheckNumber { get; set; }
         public String CheckDate { get; set; }
         public String CheckBank { get; set; }
         public String DepositoryBankCode { get; set; }
-        public Boolean IsClear { get; set; }
+        public String IsClear { get; set; }
     }
 }

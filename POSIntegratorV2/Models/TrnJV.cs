@@ -18,10 +18,10 @@ namespace POSIntegratorV2.Models
         public String AccountCode { get; set; }
         public String ArticleCode { get; set; }
         public String Particulars { get; set; }
-        public Decimal DebitAmount { get; set; }
-        public Decimal CreditAmount { get; set; }
-        public Decimal ARRRNumber { get; set; }
-        public Decimal ARSINumber { get; set; }
-        public Boolean IsClear { get; set; }
+        public String DebitAmount { get; set; }
+        public String CreditAmount { get; set; }
+        public String ARRRNumber { get; set; }
+        public String ARSINumber { get; set; }
+        public String IsClear { get; set; }
     }
 }
